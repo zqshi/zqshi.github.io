@@ -18,27 +18,26 @@ try:
     from .prompt_manager import (
         # Prompt管理器
         PromptManager,
-        PromptTemplate,
-        PromptVersion,
-        PromptConstraint,
-        
-        # 工具函数
-        create_prompt_manager,
-        validate_prompt_template
+        PromptVersion
     )
     
-    from .agent_implementations import (
-        # Agent基类和实现
-        DigitalEmployeeAgent,
-        CustomerServiceAgent,
-        DataAnalysisAgent,
-        ContentCreationAgent,
-        ProjectManagementAgent,
-        TechnicalSupportAgent,
-        
-        # 工具函数
-        create_agent,
-        get_available_agents
+    from .agent_core import (
+        # Agent基类和核心组件
+        BaseAgent,
+        AgentRole,
+        AgentCapability,
+        Task,
+        TaskStatus
+    )
+    
+    from .agents.hr import HRAgent
+    from .agents.finance import FinanceAgent  
+    from .agents.coding import CodingAgent
+    
+    # 保留简化版本的调度Agent
+    from .agents_simplified import (
+        TaskPlannerAgent,
+        TaskSchedulerAgent
     )
     
     # 标记核心组件可用
@@ -138,10 +137,15 @@ def create_digital_employee_system(config=None):
     config = config or DEFAULT_AGENT_CONFIG
     
     # 创建Prompt管理器
-    prompt_manager = create_prompt_manager()
+    prompt_manager = PromptManager()
     
     # 获取可用的Agent类型
-    available_agents = get_available_agents()
+    available_agents = {
+        'hr': HRAgent,
+        'finance': FinanceAgent,
+        'planner': TaskPlannerAgent,
+        'scheduler': TaskSchedulerAgent
+    }
     
     return {
         "prompt_manager": prompt_manager,
@@ -159,21 +163,21 @@ if _CORE_COMPONENTS_AVAILABLE:
         
         # Prompt管理
         'PromptManager',
-        'PromptTemplate',
-        'PromptVersion', 
-        'PromptConstraint',
-        'create_prompt_manager',
-        'validate_prompt_template',
+        'PromptVersion',
+        
+        # Agent基础
+        'BaseAgent',
+        'AgentRole',
+        'AgentCapability',
+        'Task',
+        'TaskStatus',
         
         # Agent实现
-        'DigitalEmployeeAgent',
-        'CustomerServiceAgent',
-        'DataAnalysisAgent',
-        'ContentCreationAgent',
-        'ProjectManagementAgent',
-        'TechnicalSupportAgent',
-        'create_agent',
-        'get_available_agents',
+        'HRAgent',
+        'FinanceAgent',
+        'CodingAgent',
+        'TaskPlannerAgent',
+        'TaskSchedulerAgent',
         
         # 系统工具
         'create_digital_employee_system',

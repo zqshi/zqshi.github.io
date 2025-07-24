@@ -11,7 +11,7 @@ import uuid
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 
-from .agent_implementations import BaseAgent, AgentRole, AgentCapability, Task, TaskStatus
+from .agent_core import BaseAgent, AgentRole, AgentCapability, Task, TaskStatus
 from .coding_agent import (
     SecureCodeExecutor, DynamicToolManager, ProblemAnalyzer,
     CodeExecutionContext, ToolDefinition, ProblemSolution,

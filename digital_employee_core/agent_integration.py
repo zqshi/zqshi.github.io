@@ -19,7 +19,8 @@ from dataclasses import dataclass, asdict
 from enum import Enum
 import time
 
-from .agent_implementations import BaseAgent, AgentRole, Task, TaskStatus
+from .agent_core import BaseAgent, AgentRole, Task, TaskStatus
+from .agents_simplified import HRAgent, FinanceAgent, TaskPlannerAgent, TaskSchedulerAgent
 from .coding_agent_main import CodingAgent
 
 logger = logging.getLogger(__name__)
@@ -81,12 +82,7 @@ class EnhancedAgentScheduler:
     
     def _initialize_agent_mappings(self):
         """初始化Agent能力映射"""
-        # 导入现有Agent类（这里简化为示例）
-        from .agent_implementations import (
-            HRAgent, FinanceAgent, LegalAgent, ProductAgent,
-            OperationsAgent, ArchitectAgent, DeveloperAgent,
-            DesignerAgent, DevOpsAgent
-        )
+        # Agent类已在模块顶部导入
         
         # 定义能力映射
         agent_mappings = [
@@ -105,26 +101,18 @@ class EnhancedAgentScheduler:
                 estimated_success_rate=0.80
             ),
             AgentCapabilityMap(
-                agent_type=LegalAgent,
-                role=AgentRole.LEGAL,
-                primary_capabilities=["contract_review", "compliance_check", "legal_advice"],
-                max_complexity=8,
-                estimated_success_rate=0.75
-            ),
-            AgentCapabilityMap(
-                agent_type=ProductAgent,
-                role=AgentRole.PRODUCT,
-                primary_capabilities=["product_planning", "feature_analysis", "market_research"],
+                agent_type=TaskPlannerAgent,
+                role=AgentRole.PLANNER,
+                primary_capabilities=["task_decomposition", "dependency_analysis", "priority_optimization"],
                 max_complexity=7,
                 estimated_success_rate=0.80
             ),
             AgentCapabilityMap(
-                agent_type=DeveloperAgent,
-                role=AgentRole.DEVELOPER,
-                primary_capabilities=["code_review", "bug_fixing", "feature_development"],
-                max_complexity=8,
-                estimated_success_rate=0.85,
-                fallback_agent="coding_agent"
+                agent_type=TaskSchedulerAgent,
+                role=AgentRole.SCHEDULER,
+                primary_capabilities=["agent_matching", "load_balancing", "performance_monitoring"],
+                max_complexity=6,
+                estimated_success_rate=0.85
             ),
             # CodingAgent作为最终解决方案
             AgentCapabilityMap(

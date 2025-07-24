@@ -26,7 +26,7 @@ from .agent_integration import (
     solve_with_coding_agent,
     EscalationReason
 )
-from .agent_implementations import Task, TaskStatus
+from .agent_core import Task, TaskStatus
 from .coding_agent import ProblemType
 
 # 配置日志

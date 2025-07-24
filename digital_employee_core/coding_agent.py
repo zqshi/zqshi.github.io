@@ -42,7 +42,7 @@ import hashlib
 from pathlib import Path
 
 # 导入基础Agent框架
-from .agent_implementations import BaseAgent, AgentRole, AgentCapability, Task, TaskStatus
+from .agent_core import BaseAgent, AgentRole, AgentCapability, Task, TaskStatus
 
 logger = logging.getLogger(__name__)
 
