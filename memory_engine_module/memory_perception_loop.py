@@ -14,13 +14,13 @@ from enum import Enum
 import json
 from collections import deque
 
-from memory_engine import (
+from .memory_engine import (
     MemoryNode, WorkingMemoryNode, EpisodicMemoryNode, 
     SemanticMemoryNode, ProceduralMemoryNode, EmotionalMemoryNode,
     WorkingMemory, EpisodicMemory, SemanticMemory, 
     ProceduralMemory, EmotionalMemory
 )
-from memory_reconstruction import (
+from .memory_reconstruction import (
     MemoryGraph, AssociationDetector, MemoryFusionEngine, 
     CrossLayerRetriever, create_memory_reconstruction_system
 )

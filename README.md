@@ -1,47 +1,90 @@
-# 数字员工组织系统
+# 数字员工智能系统 (Digital Employee Intelligent System)
 
-基于Multi Agent技术架构的企业数字化转型解决方案，通过"数字员工"作为企业内主要工作对象，实现智能化的组织协作模式。
+基于Multi Agent技术架构和分层动态记忆引擎的企业数字化转型解决方案，通过"数字员工"作为企业内主要工作对象，实现智能化的组织协作模式。
 
-## 🌟 系统特性
+## 🌟 核心特性
 
+### 🧠 分层动态记忆引擎
+- **五层记忆体系**: 工作记忆、情景记忆、语义记忆、程序性记忆、情感记忆
+- **动态记忆重构**: 关联检索、记忆衰减、记忆融合机制
+- **感知-记忆闭环**: 智能输入处理 → 记忆匹配 → 推理引擎 → 响应输出
+- **跨层记忆检索**: 基于图神经网络的关联分析和记忆融合
+
+### 🤖 智能Agent系统
 - **多角色Agent支持**: 人力、法务、财务、产品、运营、架构师、研发、设计、运维等9个核心岗位
+- **智能Prompt管理**: 企业级Prompt库、版本控制、约束管理
 - **智能任务调度**: 基于能力匹配和负载均衡的任务自动分配
 - **分层处理机制**: 现有工具检索 → 单Agent处理 → 多Agent协同 → 人工介入
+
+### 🔧 企业级特性
 - **企业级安全**: RBAC权限控制、数据加密、隐私保护、审计追踪
 - **高可用架构**: 容器化部署、自动伸缩、故障恢复、监控告警
+- **模块化设计**: 记忆引擎与数字员工核心分离，支持独立部署和扩展
 - **版本管理**: 全链路版本控制和日志记录
 
 ## 📁 项目结构
 
+### 模块化架构
+
 ```
 digital-employee-system/
-├── digital_employee_system.md    # 系统设计文档
-├── technical_implementation.md   # 技术实现方案
-├── agent_implementations.py      # Agent实现代码
-├── requirements.txt              # Python依赖
-├── Dockerfile                    # Docker镜像构建
-├── docker-compose.yml           # Docker Compose配置
-├── k8s-deployment.yaml           # Kubernetes部署配置
-├── deploy.sh                     # 部署脚本
-├── README.md                     # 项目说明文档
-├── config/                       # 配置文件目录
-├── logs/                         # 日志文件目录
-├── monitoring/                   # 监控配置目录
-│   ├── prometheus/              # Prometheus配置
-│   ├── grafana/                 # Grafana仪表板
-│   └── logstash/                # 日志处理配置
-└── tests/                        # 测试文件目录
+├── memory_engine_module/          # 🧠 记忆引擎模块
+│   ├── __init__.py               # 模块入口和API导出
+│   ├── memory_engine.py          # 核心记忆层实现 (五层记忆体系)
+│   ├── memory_reconstruction.py  # 动态记忆重构机制
+│   ├── memory_perception_loop.py # 感知-记忆闭环系统
+│   ├── memory_system_demo.py     # 演示和测试代码
+│   ├── MEMORY_ENGINE_README.md   # 记忆引擎详细文档
+│   └── README.md                 # 模块说明文档
+│
+├── digital_employee_core/         # 🤖 数字员工核心模块
+│   ├── __init__.py               # 模块入口和API导出
+│   ├── prompt_manager.py         # 智能Prompt管理系统
+│   ├── agent_implementations.py  # Agent实现框架
+│   ├── test_framework.py         # 测试验证框架
+│   ├── quick_test.py            # 快速测试工具
+│   ├── simple_test.py           # 简单测试示例
+│   ├── prompts/                 # Prompt模板库
+│   │   ├── system_prompts.json  # 系统级提示词
+│   │   ├── agent_prompts.json   # Agent专用提示词
+│   │   ├── task_prompts.json    # 任务型提示词
+│   │   ├── constraint_prompts.json # 约束条件提示词
+│   │   └── version.json         # 版本信息
+│   └── README.md                # 模块说明文档
+│
+├── integrated_system_test.py     # 🧪 集成测试工具
+├── digital_employee_system.md   # 系统设计文档
+├── technical_implementation.md  # 技术实现方案
+├── requirements.txt             # Python依赖 (包含记忆引擎依赖)
+├── Dockerfile                   # Docker镜像构建
+├── docker-compose.yml          # Docker Compose配置
+├── k8s-deployment.yaml          # Kubernetes部署配置
+├── deploy.sh                    # 部署脚本
+├── README.md                    # 项目说明文档 (本文档)
+├── LOCAL_GIT_STRATEGY.md        # 本地Git版本管理策略
+├── .gitignore                   # Git忽略规则
+├── .gitattributes              # Git文件属性配置
+└── .claude/                     # Claude工具配置目录
 ```
+
+### 模块职责划分
+
+| 模块 | 核心职责 | 主要组件 |
+|-----|---------|---------|
+| **记忆引擎模块** | Agent认知能力基石 | 五层记忆体系、动态重构机制、感知闭环 |
+| **数字员工核心** | 业务逻辑实现 | Prompt管理、Agent框架、测试工具 |
+| **集成测试** | 跨模块验证 | 模块集成测试、性能验证、隔离性测试 |
 
 ## 🚀 快速开始
 
 ### 环境要求
 
-- Python 3.11+
-- Docker & Docker Compose
+- Python 3.7+ (推荐 3.11+)
+- numpy, networkx (记忆引擎依赖)
+- Docker & Docker Compose (可选，用于容器化部署)
 - Kubernetes (可选，用于生产部署)
-- Redis
-- PostgreSQL
+- Redis (可选，用于分布式缓存)
+- PostgreSQL (可选，用于持久化存储)
 
 ### 1. 环境准备
 
@@ -50,12 +93,79 @@ digital-employee-system/
 git clone <repository-url>
 cd digital-employee-system
 
-# 设置环境变量
+# 安装核心依赖
+pip install numpy networkx
+
+# 安装完整依赖 (可选)
+pip install -r requirements.txt
+
+# 设置环境变量 (如需要)
 cp .env.example .env
 # 编辑.env文件，设置必要的配置
+```
 
-# 安装Python依赖 (本地开发)
-pip install -r requirements.txt
+### 2. 模块化快速体验
+
+#### 🧠 记忆引擎模块体验
+```python
+# 导入记忆引擎模块
+from memory_engine_module import create_memory_system, InputType
+
+# 创建记忆系统
+memory_system = create_memory_system()
+
+# 处理查询输入
+result = memory_system.process(
+    "我需要帮助生成销售报告",
+    InputType.QUERY,
+    {"source": "user", "urgency": "high"}
+)
+
+print(f"响应: {result.response}")
+print(f"置信度: {result.confidence}")
+print(f"激活记忆数: {len(result.activated_memories)}")
+
+# 运行完整演示
+from memory_engine_module.memory_system_demo import MemorySystemDemo
+demo = MemorySystemDemo()
+demo.run_complete_demo()
+```
+
+#### 🤖 数字员工核心模块体验
+```python
+# 导入数字员工核心模块
+from digital_employee_core import (
+    get_module_info,
+    check_dependencies,
+    create_digital_employee_system
+)
+
+# 检查模块状态
+module_info = get_module_info()
+print(f"模块: {module_info['name']} v{module_info['version']}")
+
+# 检查依赖
+dependencies = check_dependencies()
+for dep, info in dependencies.items():
+    status = "✓" if info["available"] else "❌"
+    print(f"{status} {dep}: {info.get('version', info.get('error'))}")
+
+# 创建完整系统 (如果组件可用)
+if module_info['components_available']:
+    system = create_digital_employee_system()
+    print(f"系统创建成功，可用Agent: {len(system['available_agents'])}")
+```
+
+#### 🧪 集成测试体验
+```bash
+# 运行完整的集成测试
+python integrated_system_test.py
+
+# 选择测试选项:
+# ✓ 记忆引擎模块测试
+# ✓ 数字员工核心模块测试  
+# ✓ 跨模块集成测试
+# ✓ 模块隔离性测试
 ```
 
 ### 2. 开发环境部署

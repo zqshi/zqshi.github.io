@@ -13,7 +13,7 @@ import json
 import time
 import logging
 from dataclasses import dataclass
-from memory_engine import (
+from .memory_engine import (
     MemoryNode, WorkingMemoryNode, EpisodicMemoryNode, 
     SemanticMemoryNode, ProceduralMemoryNode, EmotionalMemoryNode,
     MemoryLayer

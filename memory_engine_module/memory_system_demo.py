@@ -12,9 +12,9 @@ import time
 import json
 import logging
 from typing import Dict, List, Any
-from memory_engine import *
-from memory_reconstruction import *
-from memory_perception_loop import *
+from .memory_engine import *
+from .memory_reconstruction import *
+from .memory_perception_loop import *
 
 # 配置日志
 logging.basicConfig(
