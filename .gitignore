@@ -56,6 +56,11 @@ venv.bak/
 
 # OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
 # Logs
@@ -64,7 +69,54 @@ logs/
 
 # Test reports
 test_report*.html
+test_output/
+test_results/
 
 # Temporary files
 *.tmp
 *.temp
+tmp/
+temp/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Security & Secrets
+.env.local
+.env.production
+.env.staging
+secrets/
+private_keys/
+certificates/
+*.key
+*.pem
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# AI/ML models
+models/
+*.model
+*.pkl
+*.joblib
+
+# Docker
+.dockerignore
+
+# Personal config files
+config.local.*
+settings.local.*
+
+# Documentation builds
+docs/build/
+docs/_build/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
