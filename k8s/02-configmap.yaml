@@ -1,0 +1,321 @@
+# 數字員工系統配置映射
+# Digital Employee System ConfigMap
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: digital-employee-config
+  namespace: digital-employee
+  labels:
+    app: digital-employee
+    component: config
+    version: "2.0.0"
+data:
+  # 應用程序配置
+  DIGITAL_EMPLOYEE_ENV: "production"
+  DIGITAL_EMPLOYEE_LOG_LEVEL: "INFO"
+  DIGITAL_EMPLOYEE_WORKERS: "4"
+  DIGITAL_EMPLOYEE_MAX_REQUESTS: "1000"
+  DIGITAL_EMPLOYEE_TIMEOUT: "60"
+  PROMETHEUS_METRICS_PORT: "8001"
+  HEALTH_CHECK_PORT: "8002"
+  
+  # 数据库配置
+  DATABASE_HOST: "postgres-primary"
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: "digital_employee"
+  DATABASE_USER: "postgres"
+  
+  # Redis配置
+  REDIS_HOST: "redis-master"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  
+  # 监控配置
+  PROMETHEUS_HOST: "prometheus"
+  PROMETHEUS_PORT: "9090"
+  GRAFANA_HOST: "grafana"
+  GRAFANA_PORT: "3000"
+
+---
+# Nginx配置
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: digital-employee
+  labels:
+    app: nginx
+    component: config
+data:
+  nginx.conf: |
+    events {
+        worker_connections 1024;
+    }
+    
+    http {
+        upstream digital_employee_backend {
+            server digital-employee-app-svc:8000;
+        }
+        
+        # 健康检查配置
+        server {
+            listen 80;
+            server_name _;
+            
+            # 健康检查端点
+            location /health {
+                access_log off;
+                return 200 "healthy\n";
+                add_header Content-Type text/plain;
+            }
+            
+            # 应用代理
+            location / {
+                proxy_pass http://digital_employee_backend;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+                
+                # 超时配置
+                proxy_connect_timeout 60s;
+                proxy_send_timeout 60s;
+                proxy_read_timeout 60s;
+                
+                # 缓冲配置
+                proxy_buffering on;
+                proxy_buffer_size 4k;
+                proxy_buffers 8 4k;
+            }
+            
+            # 监控端点代理
+            location /metrics {
+                proxy_pass http://digital_employee_backend:8001/metrics;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+            }
+        }
+    }
+
+---
+# Prometheus配置
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: digital-employee
+  labels:
+    app: prometheus
+    component: config
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 30s
+      evaluation_interval: 30s
+      
+    rule_files:
+      - "/etc/prometheus/rules/*.yml"
+      
+    scrape_configs:
+      # Prometheus自监控
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+            
+      # 数字员工应用监控
+      - job_name: 'digital-employee-app'
+        static_configs:
+          - targets: ['digital-employee-app-svc:8001']
+        metrics_path: '/metrics'
+        scrape_interval: 15s
+        
+      # Kubernetes监控
+      - job_name: 'kubernetes-apiservers'
+        kubernetes_sd_configs:
+          - role: endpoints
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: default;kubernetes;https
+            
+      # 节点监控
+      - job_name: 'kubernetes-nodes'
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+            
+      # Pod监控
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+
+---
+# Grafana配置
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-config
+  namespace: digital-employee
+  labels:
+    app: grafana
+    component: config
+data:
+  grafana.ini: |
+    [server]
+    http_port = 3000
+    domain = localhost
+    
+    [security]
+    admin_user = admin
+    allow_sign_up = false
+    
+    [users]
+    allow_sign_up = false
+    allow_org_create = false
+    auto_assign_org = true
+    auto_assign_org_role = Viewer
+    
+    [auth.anonymous]
+    enabled = false
+    
+    [database]
+    type = sqlite3
+    path = grafana.db
+    
+    [session]
+    provider = file
+    
+    [analytics]
+    reporting_enabled = false
+    check_for_updates = false
+    
+    [log]
+    mode = console
+    level = info
+
+---
+# Logstash配置
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+  namespace: digital-employee
+  labels:
+    app: logstash
+    component: config
+data:
+  logstash.conf: |
+    input {
+      # 从文件读取日志
+      file {
+        path => "/var/log/digital_employee/*.log"
+        start_position => "beginning"
+        codec => json
+        tags => ["digital_employee"]
+      }
+      
+      # 从Nginx读取访问日志
+      file {
+        path => "/var/log/nginx/access.log"
+        start_position => "beginning"
+        tags => ["nginx", "access"]
+      }
+      
+      # 从Nginx读取错误日志
+      file {
+        path => "/var/log/nginx/error.log"
+        start_position => "beginning"
+        tags => ["nginx", "error"]
+      }
+    }
+    
+    filter {
+      # 处理数字员工应用日志
+      if "digital_employee" in [tags] {
+        mutate {
+          add_field => { "service" => "digital-employee" }
+        }
+        
+        # 解析时间戳
+        date {
+          match => [ "timestamp", "ISO8601" ]
+        }
+        
+        # 提取关键字段
+        if [level] {
+          mutate {
+            add_field => { "log_level" => "%{level}" }
+          }
+        }
+      }
+      
+      # 处理Nginx日志
+      if "nginx" in [tags] {
+        mutate {
+          add_field => { "service" => "nginx" }
+        }
+        
+        if "access" in [tags] {
+          grok {
+            match => { "message" => "%{COMBINEDAPACHELOG}" }
+          }
+          
+          # 转换响应时间为数字
+          if [response_time] {
+            mutate {
+              convert => { "response_time" => "float" }
+            }
+          }
+        }
+      }
+      
+      # 添加公共字段
+      mutate {
+        add_field => { 
+          "environment" => "production"
+          "cluster" => "digital-employee-k8s"
+          "parsed_at" => "%{@timestamp}"
+        }
+      }
+    }
+    
+    output {
+      elasticsearch {
+        hosts => ["elasticsearch:9200"]
+        index => "digital-employee-%{+YYYY.MM.dd}"
+        
+        # 添加模板配置
+        template_name => "digital-employee"
+        template_pattern => "digital-employee-*"
+        template => "/usr/share/logstash/templates/digital-employee-template.json"
+      }
+      
+      # 调试输出（可选）
+      stdout {
+        codec => json_lines
+      }
+    }

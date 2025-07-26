@@ -1,0 +1,770 @@
+# 网络策略配置
+# Network Policy Configuration for Enhanced Security
+
+# 默认拒绝所有入站流量的网络策略
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: digital-employee
+  labels:
+    app: security
+    component: network-policy
+spec:
+  podSelector: {}  # 应用于命名空间中的所有Pod
+  policyTypes:
+  - Ingress
+  - Egress
+  # 空的ingress和egress规则意味着拒绝所有流量
+
+---
+# 数字员工应用网络策略
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: digital-employee-app-netpol
+  namespace: digital-employee
+  labels:
+    app: digital-employee
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: digital-employee
+      component: app
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # 允许来自Nginx负载均衡器的流量
+  - from:
+    - podSelector:
+        matchLabels:
+          app: nginx
+          component: loadbalancer
+    ports:
+    - protocol: TCP
+      port: 8000  # 应用端口
+    - protocol: TCP
+      port: 8001  # 监控端口
+    - protocol: TCP
+      port: 8002  # 健康检查端口
+  
+  # 允许来自Prometheus的监控流量
+  - from:
+    - podSelector:
+        matchLabels:
+          app: prometheus
+          component: server
+    ports:
+    - protocol: TCP
+      port: 8001  # 监控端口
+  
+  # 允许来自同一应用的Pod间通信
+  - from:
+    - podSelector:
+        matchLabels:
+          app: digital-employee
+          component: app
+    ports:
+    - protocol: TCP
+      port: 8000
+  
+  egress:
+  # 允许访问PostgreSQL数据库
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  
+  # 允许访问Redis缓存
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  
+  # 允许DNS查询
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  
+  # 允许访问Kubernetes API服务器
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+    namespaceSelector:
+      matchLabels:
+        name: kube-system
+  
+  # 允许外部API调用（如Claude API）
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443  # HTTPS
+    - protocol: TCP
+      port: 80   # HTTP
+
+---
+# Nginx负载均衡器网络策略
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: nginx-netpol
+  namespace: digital-employee
+  labels:
+    app: nginx
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: nginx
+      component: loadbalancer
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # 允许来自外部的HTTP/HTTPS流量
+  - from: []  # 允许所有外部流量
+    ports:
+    - protocol: TCP
+      port: 80   # HTTP
+    - protocol: TCP
+      port: 443  # HTTPS
+  
+  # 允许Prometheus监控
+  - from:
+    - podSelector:
+        matchLabels:
+          app: prometheus
+          component: server
+    ports:
+    - protocol: TCP
+      port: 9113  # Nginx Exporter
+  
+  egress:
+  # 允许转发到数字员工应用
+  - to:
+    - podSelector:
+        matchLabels:
+          app: digital-employee
+          component: app
+    ports:
+    - protocol: TCP
+      port: 8000
+    - protocol: TCP
+      port: 8001
+    - protocol: TCP
+      port: 8002
+  
+  # 允许DNS查询
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+---
+# PostgreSQL数据库网络策略
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: postgres-netpol
+  namespace: digital-employee
+  labels:
+    app: postgres
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: postgres
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # 只允许来自数字员工应用的数据库连接
+  - from:
+    - podSelector:
+        matchLabels:
+          app: digital-employee
+          component: app
+    ports:
+    - protocol: TCP
+      port: 5432
+  
+  # 允许主从复制通信
+  - from:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  
+  # 允许Prometheus监控
+  - from:
+    - podSelector:
+        matchLabels:
+          app: prometheus
+          component: server
+    ports:
+    - protocol: TCP
+      port: 9187  # PostgreSQL Exporter
+  
+  egress:
+  # 允许主从复制通信
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+  
+  # 允许DNS查询
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+---
+# Redis缓存网络策略
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-netpol
+  namespace: digital-employee
+  labels:
+    app: redis
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # 只允许来自数字员工应用的Redis连接
+  - from:
+    - podSelector:
+        matchLabels:
+          app: digital-employee
+          component: app
+    ports:
+    - protocol: TCP
+      port: 6379
+  
+  # 允许Redis主从复制和Sentinel通信
+  - from:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379   # Redis
+    - protocol: TCP
+      port: 26379  # Sentinel
+  
+  # 允许Prometheus监控
+  - from:
+    - podSelector:
+        matchLabels:
+          app: prometheus
+          component: server
+    ports:
+    - protocol: TCP
+      port: 9121  # Redis Exporter
+  
+  egress:
+  # 允许Redis集群通信
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+    - protocol: TCP
+      port: 26379
+  
+  # 允许DNS查询
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+---
+# Prometheus监控系统网络策略
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: prometheus-netpol
+  namespace: digital-employee
+  labels:
+    app: prometheus
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: prometheus
+      component: server
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # 允许来自Grafana的查询
+  - from:
+    - podSelector:
+        matchLabels:
+          app: grafana
+          component: server
+    ports:
+    - protocol: TCP
+      port: 9090
+  
+  # 允许外部访问（通过Ingress）
+  - from: []
+    ports:
+    - protocol: TCP
+      port: 9090
+  
+  egress:
+  # 允许抓取各种服务的监控指标
+  - to:
+    - podSelector:
+        matchLabels:
+          app: digital-employee
+          component: app
+    ports:
+    - protocol: TCP
+      port: 8001
+  
+  - to:
+    - podSelector:
+        matchLabels:
+          app: nginx
+          component: loadbalancer
+    ports:
+    - protocol: TCP
+      port: 9113
+  
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 9187
+  
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 9121
+  
+  - to:
+    - podSelector:
+        matchLabels:
+          app: elasticsearch
+          component: server
+    ports:
+    - protocol: TCP
+      port: 9114
+  
+  # 允许访问Kubernetes API和节点指标
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 10250  # Kubelet metrics
+  
+  # 允许DNS查询
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+---
+# Grafana仪表板网络策略
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: grafana-netpol
+  namespace: digital-employee
+  labels:
+    app: grafana
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: grafana
+      component: server
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # 允许外部访问（通过Ingress）
+  - from: []
+    ports:
+    - protocol: TCP
+      port: 3000
+  
+  egress:
+  # 允许查询Prometheus
+  - to:
+    - podSelector:
+        matchLabels:
+          app: prometheus
+          component: server
+    ports:
+    - protocol: TCP
+      port: 9090
+  
+  # 允许SMTP邮件发送
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 587   # SMTP
+    - protocol: TCP
+      port: 465   # SMTPS
+  
+  # 允许DNS查询
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+---
+# Elasticsearch日志系统网络策略
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: elasticsearch-netpol
+  namespace: digital-employee
+  labels:
+    app: elasticsearch
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: elasticsearch
+      component: server
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # 允许来自Kibana的查询
+  - from:
+    - podSelector:
+        matchLabels:
+          app: kibana
+          component: server
+    ports:
+    - protocol: TCP
+      port: 9200
+  
+  # 允许来自Logstash的数据写入
+  - from:
+    - podSelector:
+        matchLabels:
+          app: logstash
+          component: server
+    ports:
+    - protocol: TCP
+      port: 9200
+  
+  # 允许Elasticsearch集群通信
+  - from:
+    - podSelector:
+        matchLabels:
+          app: elasticsearch
+          component: server
+    ports:
+    - protocol: TCP
+      port: 9200  # HTTP
+    - protocol: TCP
+      port: 9300  # Transport
+  
+  # 允许Prometheus监控
+  - from:
+    - podSelector:
+        matchLabels:
+          app: prometheus
+          component: server
+    ports:
+    - protocol: TCP
+      port: 9114  # Elasticsearch Exporter
+  
+  egress:
+  # 允许Elasticsearch集群通信
+  - to:
+    - podSelector:
+        matchLabels:
+          app: elasticsearch
+          component: server
+    ports:
+    - protocol: TCP
+      port: 9200
+    - protocol: TCP
+      port: 9300
+  
+  # 允许DNS查询
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+---
+# Kibana日志查看网络策略
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kibana-netpol
+  namespace: digital-employee
+  labels:
+    app: kibana
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: kibana
+      component: server
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # 允许外部访问（通过Ingress）
+  - from: []
+    ports:
+    - protocol: TCP
+      port: 5601
+  
+  egress:
+  # 允许查询Elasticsearch
+  - to:
+    - podSelector:
+        matchLabels:
+          app: elasticsearch
+          component: server
+    ports:
+    - protocol: TCP
+      port: 9200
+  
+  # 允许DNS查询
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+---
+# Logstash日志处理网络策略
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: logstash-netpol
+  namespace: digital-employee
+  labels:
+    app: logstash
+    component: network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: logstash
+      component: server
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # 允许来自Beats的日志数据
+  - from: []  # Beats可能来自任何地方
+    ports:
+    - protocol: TCP
+      port: 5044
+  
+  # 允许监控端口访问
+  - from:
+    - podSelector:
+        matchLabels:
+          app: prometheus
+          component: server
+    ports:
+    - protocol: TCP
+      port: 9600
+  
+  egress:
+  # 允许向Elasticsearch发送数据
+  - to:
+    - podSelector:
+        matchLabels:
+          app: elasticsearch
+          component: server
+    ports:
+    - protocol: TCP
+      port: 9200
+  
+  # 允许DNS查询
+  - to: []
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+
+---
+# 跨命名空间访问策略
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-kube-system
+  namespace: digital-employee
+  labels:
+    app: security
+    component: cross-namespace-policy
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  # 允许访问kube-system命名空间中的DNS和其他系统服务
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53    # DNS
+    - protocol: TCP
+      port: 53    # DNS over TCP
+    - protocol: TCP
+      port: 443   # Kubernetes API
+  
+  # 允许访问ingress-nginx命名空间（如果使用NGINX Ingress Controller）
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 443
+
+---
+# 网络策略监控和审计
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: network-policy-monitor
+  namespace: digital-employee
+  labels:
+    app: monitoring
+    component: network-policy
+data:
+  monitor-netpol.sh: |
+    #!/bin/bash
+    # 网络策略监控脚本
+    
+    NAMESPACE="digital-employee"
+    
+    echo "=== Network Policy Status ==="
+    echo "Timestamp: $(date)"
+    
+    # 检查所有网络策略
+    echo "Active Network Policies:"
+    kubectl get networkpolicy -n $NAMESPACE -o custom-columns=NAME:.metadata.name,PODS:.spec.podSelector,AGE:.metadata.creationTimestamp
+    
+    # 检查没有被网络策略覆盖的Pod
+    echo ""
+    echo "Pods without Network Policy protection:"
+    kubectl get pods -n $NAMESPACE -o json | jq -r '
+      .items[] | 
+      select(.metadata.labels | length == 0) |
+      "Pod: \(.metadata.name) has no labels and may not be covered by network policies"
+    '
+    
+    # 检查网络策略冲突
+    echo ""
+    echo "Checking for potential policy conflicts..."
+    kubectl get networkpolicy -n $NAMESPACE -o json | jq -r '
+      .items[] |
+      "Policy: \(.metadata.name) affects pods with selector: \(.spec.podSelector)"
+    '
+    
+    echo "=== End Network Policy Status ==="
+
+---
+# 网络策略测试Job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: network-policy-test
+  namespace: digital-employee
+  labels:
+    app: testing
+    component: network-policy-test
+spec:
+  template:
+    spec:
+      serviceAccountName: digital-employee-sa
+      containers:
+      - name: netpol-test
+        image: nicolaka/netshoot
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/bash
+        - -c
+        - |
+          echo "=== Network Policy Connectivity Test ==="
+          
+          # 测试应用到数据库的连接
+          echo "Testing app to PostgreSQL connection..."
+          nc -zv postgres-primary-svc 5432 && echo "✅ PostgreSQL connection OK" || echo "❌ PostgreSQL connection FAILED"
+          
+          # 测试应用到Redis的连接
+          echo "Testing app to Redis connection..."
+          nc -zv redis-master-svc 6379 && echo "✅ Redis connection OK" || echo "❌ Redis connection FAILED"
+          
+          # 测试外部网络连接
+          echo "Testing external connectivity..."
+          nc -zv google.com 443 && echo "✅ External HTTPS OK" || echo "❌ External HTTPS FAILED"
+          
+          # 测试DNS解析
+          echo "Testing DNS resolution..."
+          nslookup kubernetes.default.svc.cluster.local && echo "✅ DNS resolution OK" || echo "❌ DNS resolution FAILED"
+          
+          echo "=== Network Policy Test Complete ==="
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+      restartPolicy: Never
+  backoffLimit: 3

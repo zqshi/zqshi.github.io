@@ -1,0 +1,491 @@
+# Ingress入口配置
+# Ingress Configuration for External Access
+
+# Ingress Controller（如果需要安装NGINX Ingress Controller）
+# 注意：在实际部署时，通常Ingress Controller已经由集群管理员安装
+# 这里提供参考配置
+
+# Certificate Issuer（如果使用cert-manager）
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  labels:
+    app: cert-manager
+    component: issuer
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: ops-team@company.com  # 替换为实际邮箱
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+    - dns01:
+        cloudflare:
+          email: ops-team@company.com
+          apiTokenSecretRef:
+            name: cloudflare-api-token
+            key: api-token
+
+---
+# 开发环境Certificate Issuer
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+  labels:
+    app: cert-manager
+    component: issuer
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: ops-team@company.com
+    privateKeySecretRef:
+      name: letsencrypt-staging
+    solvers:
+    - http01:
+        ingress:
+          class: nginx
+
+---
+# 主应用Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: digital-employee-ingress
+  namespace: digital-employee
+  labels:
+    app: digital-employee
+    component: ingress
+  annotations:
+    # Ingress Controller配置
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    
+    # SSL配置
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    
+    # 会话亲和性
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "digital-employee-session"
+    nginx.ingress.kubernetes.io/session-cookie-expires: "86400"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "86400"
+    nginx.ingress.kubernetes.io/session-cookie-path: "/"
+    
+    # 限流配置
+    nginx.ingress.kubernetes.io/rate-limit-connections: "100"
+    nginx.ingress.kubernetes.io/rate-limit-rpm: "1000"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    
+    # 缓存配置
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "8"
+    
+    # 超时配置
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-next-upstream-tries: "3"
+    
+    # 安全头
+    nginx.ingress.kubernetes.io/server-snippet: |
+      add_header X-Frame-Options DENY always;
+      add_header X-Content-Type-Options nosniff always;
+      add_header X-XSS-Protection "1; mode=block" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';" always;
+      add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+    
+    # WebSocket支持
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      
+    # 自定义配置
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      # 健康检查
+      location /health {
+        access_log off;
+        return 200 "healthy\n";
+        add_header Content-Type text/plain;
+      }
+      
+      # 机器人检测
+      if ($http_user_agent ~* (bot|crawl|spider|slurp)) {
+        return 429;
+      }
+      
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - digital-employee.company.com
+    - api.digital-employee.company.com
+    - admin.digital-employee.company.com
+    secretName: digital-employee-tls-cert
+  rules:
+  # 主应用域名
+  - host: digital-employee.company.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: digital-employee-app-svc
+            port:
+              number: 8000
+  
+  # API子域名
+  - host: api.digital-employee.company.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: digital-employee-app-svc
+            port:
+              number: 8000
+  
+  # 管理后台子域名
+  - host: admin.digital-employee.company.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: digital-employee-app-svc
+            port:
+              number: 8000
+
+---
+# 监控系统Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: monitoring-ingress
+  namespace: digital-employee
+  labels:
+    app: monitoring
+    component: ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    
+    # 基础认证
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: monitoring-basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - Monitoring'
+    
+    # IP白名单（仅允许内部网络访问）
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,192.168.0.0/16,172.16.0.0/12"
+    
+    # 安全配置
+    nginx.ingress.kubernetes.io/server-snippet: |
+      add_header X-Frame-Options DENY always;
+      add_header X-Content-Type-Options nosniff always;
+      add_header X-XSS-Protection "1; mode=block" always;
+      
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - prometheus.digital-employee.company.com
+    - grafana.digital-employee.company.com
+    - kibana.digital-employee.company.com
+    secretName: monitoring-tls-cert
+  rules:
+  # Prometheus
+  - host: prometheus.digital-employee.company.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: prometheus-svc
+            port:
+              number: 9090
+  
+  # Grafana
+  - host: grafana.digital-employee.company.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana-svc
+            port:
+              number: 3000
+  
+  # Kibana
+  - host: kibana.digital-employee.company.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kibana-svc
+            port:
+              number: 5601
+
+---
+# API专用Ingress（带更严格的限流）
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-ingress
+  namespace: digital-employee
+  labels:
+    app: digital-employee
+    component: api-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    
+    # API特定限流
+    nginx.ingress.kubernetes.io/rate-limit-connections: "50"
+    nginx.ingress.kubernetes.io/rate-limit-rpm: "500"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    
+    # CORS配置
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://digital-employee.company.com"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+    nginx.ingress.kubernetes.io/cors-expose-headers: "Content-Length,Content-Range"
+    nginx.ingress.kubernetes.io/cors-max-age: "1728000"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    
+    # 请求体大小限制
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    
+    # API路径重写
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    
+    # 自定义配置
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      # API特定的限流规则
+      limit_req_zone $binary_remote_addr zone=api_login:10m rate=5r/m;
+      limit_req_zone $binary_remote_addr zone=api_general:10m rate=100r/m;
+      
+      # 登录接口特殊限制
+      location ~* /api/v1/auth/login {
+        limit_req zone=api_login burst=2 nodelay;
+      }
+      
+      # 一般API接口限制
+      location ~* /api/v1/ {
+        limit_req zone=api_general burst=20 nodelay;
+      }
+      
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - api.digital-employee.company.com
+    secretName: api-tls-cert
+  rules:
+  - host: api.digital-employee.company.com
+    http:
+      paths:
+      # API v1路径
+      - path: /api/v1(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: digital-employee-app-svc
+            port:
+              number: 8000
+      
+      # 健康检查
+      - path: /health
+        pathType: Exact
+        backend:
+          service:
+            name: digital-employee-app-svc
+            port:
+              number: 8002
+      
+      # 指标监控
+      - path: /metrics
+        pathType: Exact
+        backend:
+          service:
+            name: digital-employee-app-svc
+            port:
+              number: 8001
+
+---
+# WebSocket专用Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: websocket-ingress
+  namespace: digital-employee
+  labels:
+    app: digital-employee
+    component: websocket-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    
+    # WebSocket特定配置
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/proxy-set-headers: "default/websocket-headers"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    
+    # WebSocket升级支持
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      
+      # WebSocket连接超时
+      proxy_read_timeout 86400s;
+      proxy_send_timeout 86400s;
+      
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - ws.digital-employee.company.com
+    secretName: websocket-tls-cert
+  rules:
+  - host: ws.digital-employee.company.com
+    http:
+      paths:
+      - path: /ws
+        pathType: Prefix
+        backend:
+          service:
+            name: digital-employee-app-svc
+            port:
+              number: 8000
+
+---
+# 基础认证Secret（用于监控系统访问）
+apiVersion: v1
+kind: Secret
+metadata:
+  name: monitoring-basic-auth
+  namespace: digital-employee
+  labels:
+    app: monitoring
+    component: auth
+type: Opaque
+data:
+  # admin:admin123 的base64编码
+  # 生产环境请使用强密码：htpasswd -nb admin your_password | base64
+  auth: YWRtaW46JGFwcjEkSEcuSGNsa1IkSmd4WUxRNHpEZmI1NkR1bkI5T1FRMQ==
+
+---
+# WebSocket头部配置
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: websocket-headers
+  namespace: digital-employee
+  labels:
+    app: digital-employee
+    component: websocket-config
+data:
+  Upgrade: "$http_upgrade"
+  Connection: "$connection_upgrade"
+  Host: "$host"
+  X-Real-IP: "$remote_addr"
+  X-Forwarded-For: "$proxy_add_x_forwarded_for"
+  X-Forwarded-Proto: "$scheme"
+
+---
+# 连接升级映射
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-websocket-config
+  namespace: digital-employee
+  labels:
+    app: nginx
+    component: websocket
+data:
+  # 用于nginx.conf中的map指令
+  websocket-map.conf: |
+    map $http_upgrade $connection_upgrade {
+        default upgrade;
+        '' close;
+    }
+
+---
+# 自定义错误页面
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: custom-error-pages
+  namespace: digital-employee
+  labels:
+    app: nginx
+    component: error-pages
+data:
+  404.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>404 - Page Not Found</title>
+        <style>
+            body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+            .error-code { font-size: 72px; color: #ddd; }
+            .error-message { font-size: 24px; color: #666; }
+            .back-link { margin-top: 20px; }
+            .back-link a { color: #007bff; text-decoration: none; }
+        </style>
+    </head>
+    <body>
+        <div class="error-code">404</div>
+        <div class="error-message">Page Not Found</div>
+        <div class="back-link">
+            <a href="/">Return to Homepage</a>
+        </div>
+    </body>
+    </html>
+    
+  50x.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Service Temporarily Unavailable</title>
+        <style>
+            body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+            .error-code { font-size: 72px; color: #ddd; }
+            .error-message { font-size: 24px; color: #666; }
+            .back-link { margin-top: 20px; }
+            .back-link a { color: #007bff; text-decoration: none; }
+        </style>
+    </head>
+    <body>
+        <div class="error-code">50x</div>
+        <div class="error-message">Service Temporarily Unavailable</div>
+        <div class="error-message">Please try again later</div>
+        <div class="back-link">
+            <a href="/">Return to Homepage</a>
+        </div>
+    </body>
+    </html>

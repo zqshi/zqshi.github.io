@@ -1,195 +1,134 @@
 """
-数字员工核心系统模块
+数字员工核心模块 (Digital Employee Core Module)
 
-本模块包含数字员工系统的核心组件：
-- 智能Prompt管理系统
-- Agent实现框架
-- 测试和验证工具
+企业级数字员工系统核心实现，基于Multi-Agent架构和Claude AI
+支持完整的产品开发流程和智能任务处理
 
-版本: 1.0.0
+主要功能：
+- 智能意图识别和流程编排
+- 标准产品开发流程执行
+- Multi-Agent协作和调度
+- Claude AI驱动的智能推理
+
+版本: 3.0.0
 作者: Digital Employee System Team
 """
 
-__version__ = "1.0.0"
+__version__ = "3.0.0"
 __author__ = "Digital Employee System Team"
 
-# 核心组件导入
+import logging
+
+# 设置模块日志
+logger = logging.getLogger(__name__)
+
+# 尝试导入核心组件
 try:
-    from .prompt_manager import (
-        # Prompt管理器
-        PromptManager,
-        PromptVersion
+    # Claude集成
+    from .claude_integration import (
+        ClaudeService,
+        create_claude_service,
+        ClaudeDigitalEmployee,
+        create_claude_digital_employee
     )
     
-    from .agent_core import (
-        # Agent基类和核心组件
-        BaseAgent,
-        AgentRole,
-        AgentCapability,
-        Task,
-        TaskStatus
+    # 意图识别和流程编排
+    from .intent_recognition import (
+        SmartIntentRecognizer,
+        ProcessOrchestrator,
+        create_intent_recognizer,
+        create_process_orchestrator,
+        IntentType,
+        ProcessStage,
+        IntentRecognitionResult
     )
     
-    from .agents.hr import HRAgent
-    from .agents.finance import FinanceAgent  
-    from .agents.coding import CodingAgent
-    
-    # 保留简化版本的调度Agent
-    from .agents_simplified import (
-        TaskPlannerAgent,
-        TaskSchedulerAgent
+    # 流程执行引擎
+    from .process_engine import (
+        ProductDevelopmentProcessEngine,
+        create_process_engine
     )
     
-    # 标记核心组件可用
+    # Multi-Agent数字员工系统
+    from .multi_agent_digital_employee import (
+        MultiAgentDigitalEmployee,
+        create_multi_agent_digital_employee,
+        create_compatible_multi_agent_employee
+    )
+    
     _CORE_COMPONENTS_AVAILABLE = True
+    _IMPORT_ERROR = None
+    
+    logger.info("数字员工核心组件加载成功")
     
 except ImportError as e:
-    # 如果导入失败，提供基础信息
     _CORE_COMPONENTS_AVAILABLE = False
     _IMPORT_ERROR = str(e)
-
-# 模块级别的配置
-DEFAULT_AGENT_CONFIG = {
-    "max_conversation_history": 50,
-    "response_timeout": 30,
-    "enable_memory_integration": True,
-    "log_level": "INFO",
-    "enable_prompt_caching": True,
-    "max_prompt_cache_size": 100
-}
-
-def get_module_info():
-    """
-    获取模块信息
+    logger.error(f"数字员工核心组件加载失败: {e}")
     
-    Returns:
-        dict: 包含版本、作者等信息的字典
-    """
-    info = {
-        "name": "Digital Employee Core Module",
-        "version": __version__,
-        "author": __author__,
-        "description": "数字员工核心系统",
-        "components_available": _CORE_COMPONENTS_AVAILABLE
-    }
-    
-    if _CORE_COMPONENTS_AVAILABLE:
-        info["components"] = {
-            "prompt_manager": "智能Prompt管理系统",
-            "agent_implementations": "Agent实现框架"
-        }
-    else:
-        info["import_error"] = _IMPORT_ERROR
-    
-    return info
-
-def check_dependencies():
-    """
-    检查模块依赖是否满足
-    
-    Returns:
-        dict: 依赖检查结果
-    """
-    dependencies = {}
-    
-    # 检查基础依赖
-    try:
-        import json
-        dependencies["json"] = {"available": True, "version": "built-in"}
-    except ImportError:
-        dependencies["json"] = {"available": False, "error": "Missing json module"}
-    
-    try:
-        import logging
-        dependencies["logging"] = {"available": True, "version": "built-in"} 
-    except ImportError:
-        dependencies["logging"] = {"available": False, "error": "Missing logging module"}
-    
-    try:
-        import time
-        dependencies["time"] = {"available": True, "version": "built-in"}
-    except ImportError:
-        dependencies["time"] = {"available": False, "error": "Missing time module"}
-    
-    # 检查可选依赖
-    try:
-        import requests
-        dependencies["requests"] = {"available": True, "version": getattr(requests, '__version__', 'unknown')}
-    except ImportError:
-        dependencies["requests"] = {"available": False, "error": "Optional: HTTP requests support"}
-    
-    return dependencies
-
-# 便捷的创建函数
-def create_digital_employee_system(config=None):
-    """
-    创建完整的数字员工系统
-    
-    Args:
-        config (dict, optional): 系统配置参数
+    # 创建占位符类
+    class MockComponent:
+        def __init__(self, *args, **kwargs):
+            self.mock = True
+            self.active_sessions = {}
         
-    Returns:
-        dict: 包含各组件的系统字典
-    """
+        def __getattr__(self, name):
+            return lambda *args, **kwargs: None
+        
+        async def process_user_request(self, *args, **kwargs):
+            from collections import namedtuple
+            MockResponse = namedtuple('MockResponse', ['content', 'response_type', 'next_stage', 'requires_user_input', 'suggested_inputs', 'additional_info'])
+            
+            class MockStage:
+                def __init__(self, value):
+                    self.value = value
+            
+            return MockResponse(
+                content="数字员工核心模块未正确加载，请检查系统配置。",
+                response_type="error",
+                next_stage=MockStage("error"),
+                requires_user_input=False,
+                suggested_inputs=["检查系统状态", "重新启动"],
+                additional_info={"mock": True, "error": str(_IMPORT_ERROR)}
+            )
+    
+    # 使用占位符
+    ClaudeService = MockComponent
+    MultiAgentDigitalEmployee = MockComponent
+    create_claude_service = lambda: MockComponent()
+    create_multi_agent_digital_employee = lambda: MockComponent()
+    create_compatible_multi_agent_employee = lambda: MockComponent()
+
+# 工厂函数
+def create_unified_digital_employee():
+    """创建统一数字员工实例"""
     if not _CORE_COMPONENTS_AVAILABLE:
-        raise ImportError(f"核心组件不可用: {_IMPORT_ERROR}")
+        logger.warning(f"使用Mock数字员工，原因: {_IMPORT_ERROR}")
+        return MockComponent()
     
-    config = config or DEFAULT_AGENT_CONFIG
-    
-    # 创建Prompt管理器
-    prompt_manager = PromptManager()
-    
-    # 获取可用的Agent类型
-    available_agents = {
-        'hr': HRAgent,
-        'finance': FinanceAgent,
-        'planner': TaskPlannerAgent,
-        'scheduler': TaskSchedulerAgent
-    }
-    
-    return {
-        "prompt_manager": prompt_manager,
-        "available_agents": available_agents,
-        "config": config,
-        "version": __version__
-    }
+    try:
+        # 优先使用Multi-Agent系统
+        return create_compatible_multi_agent_employee()
+    except Exception as e:
+        logger.error(f"创建Multi-Agent数字员工失败: {e}")
+        # Fallback到Claude数字员工
+        try:
+            claude_service = create_claude_service()
+            return create_claude_digital_employee(claude_service)
+        except Exception as e2:
+            logger.error(f"创建Claude数字员工失败: {e2}")
+            return MockComponent()
 
-# 导出的公共API
-if _CORE_COMPONENTS_AVAILABLE:
-    __all__ = [
-        # 版本信息
-        '__version__',
-        '__author__',
-        
-        # Prompt管理
-        'PromptManager',
-        'PromptVersion',
-        
-        # Agent基础
-        'BaseAgent',
-        'AgentRole',
-        'AgentCapability',
-        'Task',
-        'TaskStatus',
-        
-        # Agent实现
-        'HRAgent',
-        'FinanceAgent',
-        'CodingAgent',
-        'TaskPlannerAgent',
-        'TaskSchedulerAgent',
-        
-        # 系统工具
-        'create_digital_employee_system',
-        'get_module_info',
-        'check_dependencies',
-        'DEFAULT_AGENT_CONFIG'
-    ]
-else:
-    __all__ = [
-        '__version__',
-        '__author__',
-        'get_module_info', 
-        'check_dependencies',
-        'DEFAULT_AGENT_CONFIG'
-    ]
+# 兼容性导出
+UnifiedDigitalEmployee = create_unified_digital_employee
+
+# 导出主要接口
+__all__ = [
+    'create_unified_digital_employee',
+    'UnifiedDigitalEmployee',
+    'ClaudeService',
+    'MultiAgentDigitalEmployee',
+    'create_claude_service',
+    'create_multi_agent_digital_employee',
+    'create_compatible_multi_agent_employee'
+]

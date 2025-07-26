@@ -1,0 +1,87 @@
+# 数字员工系统命名空间配置
+# Digital Employee System Namespace Configuration
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: digital-employee
+  labels:
+    name: digital-employee
+    version: "2.0.0"
+    environment: production
+    project: digital-employee-system
+    managed-by: kubernetes
+  annotations:
+    description: "Enterprise Digital Employee Multi-Agent System Namespace"
+    contact: "digital-employee-team@company.com"
+    created-by: "DevOps Team"
+    last-updated: "2024-07-26"
+
+---
+# 资源配额限制
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: digital-employee-quota
+  namespace: digital-employee
+spec:
+  hard:
+    # 计算资源限制
+    requests.cpu: "8"          # 8核CPU请求
+    requests.memory: 16Gi      # 16GB内存请求
+    limits.cpu: "16"           # 16核CPU限制
+    limits.memory: 32Gi        # 32GB内存限制
+    
+    # 存储资源限制
+    requests.storage: 100Gi    # 100GB存储请求
+    persistentvolumeclaims: "10"  # 最多10个PVC
+    
+    # Pod数量限制
+    pods: "50"                 # 最多50个Pod
+    replicationcontrollers: "20"  # 最多20个RC
+    services: "20"             # 最多20个服务
+    secrets: "20"              # 最多20个Secret
+    configmaps: "20"           # 最多20个ConfigMap
+    
+    # 负载均衡器限制
+    services.loadbalancers: "5"   # 最多5个负载均衡器
+
+---
+# 限制范围配置
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: digital-employee-limits
+  namespace: digital-employee
+spec:
+  limits:
+  # 容器级别限制
+  - type: Container
+    default:
+      cpu: 500m              # 默认CPU限制
+      memory: 1Gi            # 默认内存限制
+    defaultRequest:
+      cpu: 100m              # 默认CPU请求
+      memory: 256Mi          # 默认内存请求
+    max:
+      cpu: "2"               # 最大CPU限制
+      memory: 4Gi            # 最大内存限制
+    min:
+      cpu: 50m               # 最小CPU请求
+      memory: 128Mi          # 最小内存请求
+      
+  # Pod级别限制
+  - type: Pod
+    max:
+      cpu: "4"               # Pod最大CPU
+      memory: 8Gi            # Pod最大内存
+    min:
+      cpu: 100m              # Pod最小CPU
+      memory: 256Mi          # Pod最小内存
+      
+  # PVC存储限制
+  - type: PersistentVolumeClaim
+    max:
+      storage: 50Gi          # 最大存储容量
+    min:
+      storage: 1Gi           # 最小存储容量

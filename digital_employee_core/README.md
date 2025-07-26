@@ -1,419 +1,415 @@
 # 数字员工核心模块 (Digital Employee Core Module)
 
-## 模块概述
+## 🎯 模块概述
 
-数字员工核心模块是数字员工系统的主要业务逻辑实现，包含智能Prompt管理系统、多类型Agent实现框架以及测试验证工具。
+数字员工核心模块是基于Multi-Agent架构的企业级数字员工系统核心实现，旨在通过AI Agent技术全面替代企业内部不同岗位的人类员工，实现企业运营的完全智能化。
 
-## 核心特性
+## 🌟 核心特性
 
-### 🎯 智能Prompt管理系统
-- **企业级Prompt库**: 分层级、分场景的Prompt模板管理
-- **版本控制**: 支持Prompt模板的版本管理和回滚
-- **约束管理**: 安全性、合规性约束的统一管理
-- **性能监控**: Prompt使用效果的实时监控和优化
+### 🧠 企业级意图识别引擎
+- **深度语义理解**: 多维度分析用户需求，包括显性和隐性意图
+- **领域智能分类**: 自动识别产品、技术、运营、财务等12个业务领域  
+- **复杂度评估**: 1-10级智能复杂度评估，支持任务难度预判
+- **紧急程度检测**: 自动识别任务紧急程度，优化处理优先级
 
-### 🤖 多类型Agent实现
-- **客户服务Agent**: 智能客服，处理咨询和投诉
-- **数据分析Agent**: 自动化数据分析和报告生成
-- **内容创作Agent**: 文档、文案、代码生成
-- **项目管理Agent**: 任务分配、进度跟踪、风险评估
-- **技术支持Agent**: 技术问题诊断和解决方案
+### 🤖 智能任务规划器
+- **层次化任务分解**: 复杂任务自动分解为可执行的子任务
+- **依赖关系分析**: 智能识别任务间的依赖关系和执行顺序
+- **工作流优化**: 自动优化任务执行流程，支持并行和串行处理
+- **风险评估**: 提前识别执行风险并提供缓解策略
 
-### 🔧 测试验证框架
-- **单元测试**: 组件级功能验证
-- **集成测试**: 跨模块协作测试
-- **性能测试**: 响应时间和并发能力测试
-- **业务测试**: 真实场景模拟测试
+### 🎯 Multi-Agent智能调度器
+- **能力匹配算法**: 基于技能和经验的Agent最优匹配
+- **负载均衡策略**: 支持多种负载均衡策略，确保资源合理分配
+- **故障转移机制**: 自动检测和处理Agent故障，保证服务连续性
+- **协作协调**: 支持多Agent协同工作，实现复杂任务的团队协作
 
-## 快速开始
+### 👥 完整企业岗位Agent体系
+- **产品团队**: 产品经理、UX设计师等
+- **技术团队**: 技术总监、全栈开发工程师、DevOps工程师等
+- **运营团队**: 运营经理、增长黑客、内容营销等
+- **职能团队**: HR专员、财务分析师、法务顾问等
+- **兜底机制**: 终极CodingAgent处理超复杂问题
+
+### 🔧 终极CodingAgent兜底机制
+- **工程化问题解决**: 通过编程手段解决其他Agent无法处理的复杂问题
+- **动态工具创建**: 根据需要自动创建和集成新的工具和功能
+- **创新解决方案**: 设计突破性的技术解决方案
+- **知识沉淀**: 将解决方案转化为可复用的知识和工具
+
+## 📁 模块架构
+
+```
+digital_employee_core/
+├── __init__.py                    # 模块入口和公共API
+├── intent_recognition.py         # 企业级意图识别引擎
+├── task_planner.py               # 智能任务规划器
+├── agent_scheduler.py            # Multi-Agent智能调度器
+├── enterprise_agents.py          # 企业岗位Agent实现
+├── digital_employee_system.py    # 系统主控制器
+└── README.md                     # 本文档
+```
+
+## 🚀 快速开始
+
+### 环境要求
+
+- Python 3.7+ (推荐 3.11+)
+- 内置库：asyncio, json, logging, dataclasses, typing, enum, uuid, time, datetime
 
 ### 基础使用
 
 ```python
+from digital_employee_core import quick_setup_system
+
+# 创建完整的企业数字员工系统
+system = await quick_setup_system()
+
+# 处理用户请求
+response = await system.process_user_request(
+    "分析我们产品的用户留存率并制定改进策略"
+)
+
+print(f"处理状态: {response.status}")
+print(f"参与Agent: {len(response.agent_contributions)}")
+print(f"处理时间: {response.processing_time:.2f}s")
+print(f"置信度: {response.confidence_score:.2f}")
+```
+
+### 系统状态监控
+
+```python
+# 获取系统状态
+status = system.get_system_status()
+print(f"注册Agent数量: {status['registered_agents']}")
+print(f"系统运行时间: {status['uptime_seconds']:.1f}s") 
+print(f"请求成功率: {status['success_rate']:.1%}")
+print(f"平均响应时间: {status['metrics']['average_response_time']:.2f}s")
+
+# 获取Agent性能报告
+performance = system.get_performance_report()
+```
+
+### 演示系统功能
+
+```python
+from digital_employee_core import run_system_demo
+
+# 运行完整系统演示
+demo_result = await run_system_demo()
+
+print(f"演示状态: {demo_result['status']}")
+print(f"初始Agent数: {demo_result['initial_agents']}")
+print(f"处理请求数: {len(demo_result['demo_results'])}")
+print(f"最终成功率: {demo_result['success_rate']:.1%}")
+```
+
+## 🤖 支持的Agent类型
+
+### 产品团队
+- **产品经理Agent** (`ProductManagerAgent`)
+  - 需求分析与优先级排序
+  - 产品路线图制定
+  - 竞品分析与市场调研
+  - 用户体验设计指导
+
+- **UX设计师Agent** (`UXDesignerAgent`)
+  - 用户研究和洞察
+  - 交互设计和原型制作
+  - 可用性测试
+  - 设计系统建设
+
+### 技术团队
+- **技术总监Agent** (`TechLeadAgent`)
+  - 技术架构设计与评审
+  - 技术选型决策
+  - 代码质量把控
+  - 团队技术指导
+
+- **全栈开发工程师Agent** (`FullStackDeveloperAgent`)
+  - 前端应用开发
+  - 后端服务开发
+  - 数据库设计与优化
+  - API设计与开发
+
+### 运营团队
+- **运营经理Agent** (`OperationsManagerAgent`)
+  - 运营策略制定
+  - 数据分析洞察
+  - 用户增长策略
+  - 活动策划执行
+
+- **增长黑客Agent** (`GrowthHackerAgent`)
+  - 增长策略设计
+  - 数据驱动实验
+  - A/B测试设计与分析
+  - 转化漏斗优化
+
+### 职能团队
+- **HR专员Agent** (`HRSpecialistAgent`)
+  - 招聘管理
+  - 员工关系管理
+  - 绩效管理
+  - 培训发展
+
+- **财务分析师Agent** (`FinanceAnalystAgent`)
+  - 财务分析与报告
+  - 预算管理
+  - 成本控制
+  - 投资评估
+
+### 兜底机制
+- **终极CodingAgent** (`UltimateCodingAgent`)
+  - 复杂问题工程化解决
+  - 动态工具创建
+  - 系统集成开发
+  - 创新解决方案设计
+
+## 🔄 系统工作流程
+
+### 1. 用户请求处理流程
+
+```
+用户输入 → 意图识别 → 复杂度评估 → 处理策略选择
+    ↓
+策略1: 直接响应 (简单查询)
+策略2: 单Agent处理 (中等复杂度)
+策略3: 多Agent协作 (高复杂度)
+策略4: CodingAgent兜底 (超高复杂度)
+    ↓
+结果整合 → 质量检查 → 用户响应
+```
+
+### 2. 任务规划与调度
+
+```
+复杂任务输入 → 层次化分解 → 依赖关系分析
+    ↓
+工作流优化 → Agent能力匹配 → 负载均衡调度
+    ↓
+并行执行 → 进度监控 → 结果整合 → 质量保证
+```
+
+### 3. Agent协作机制
+
+```
+任务分配 → Agent执行 → 中间结果共享
+    ↓
+协作协调 → 知识融合 → 最终结果输出
+    ↓
+经验沉淀 → 知识库更新 → 系统优化
+```
+
+## 📊 API 参考
+
+### 系统创建和初始化
+
+```python
 from digital_employee_core import (
+    EnterpriseDigitalEmployeeSystem,
     create_digital_employee_system,
-    get_module_info,
-    check_dependencies
+    quick_setup_system,
+    LoadBalancingStrategy
 )
 
-# 检查模块状态
-module_info = get_module_info()
-print(f"模块: {module_info['name']} v{module_info['version']}")
-print(f"组件可用: {module_info['components_available']}")
+# 创建系统 (需要手动初始化团队)
+system = create_digital_employee_system(LoadBalancingStrategy.CAPABILITY_WEIGHTED)
+await system.initialize_enterprise_team()
 
-# 检查依赖
-dependencies = check_dependencies()
-for dep, info in dependencies.items():
-    status = "✓" if info["available"] else "❌"
-    print(f"{status} {dep}: {info.get('version', info.get('error'))}")
-
-# 创建数字员工系统（如果组件可用）
-if module_info['components_available']:
-    system = create_digital_employee_system()
-    print(f"系统创建成功，可用Agent: {len(system['available_agents'])}")
+# 快速创建完整系统 (推荐)
+system = await quick_setup_system()
 ```
 
-### Prompt管理使用
+### 请求处理
 
 ```python
-from digital_employee_core import (
-    create_prompt_manager,
-    PromptTemplate,
-    PromptConstraint
+# 基础请求处理
+response = await system.process_user_request(
+    user_input="帮我分析Q3的销售数据",
+    context={"department": "sales", "quarter": "Q3"},
+    user_id="user_001"
 )
 
-# 创建Prompt管理器
-prompt_manager = create_prompt_manager()
+# 响应对象属性
+print(response.status)              # 处理状态: success/failed/partial
+print(response.result)              # 处理结果
+print(response.agent_contributions) # Agent贡献列表
+print(response.processing_time)     # 处理时间
+print(response.confidence_score)    # 置信度得分
+print(response.recommendations)     # 建议列表
+```
 
-# 创建Prompt模板
-template = PromptTemplate(
-    template_id="customer_service_greeting",
-    name="客服问候模板",
-    content="您好！我是{agent_name}，很高兴为您服务。请问有什么可以帮助您的吗？",
-    category="customer_service",
-    variables=["agent_name"],
-    description="客服系统标准问候语模板"
+### Agent工厂
+
+```python
+from digital_employee_core import EnterpriseAgentFactory, AgentRole
+
+# 创建特定类型的Agent
+product_agent = EnterpriseAgentFactory.create_agent(
+    AgentRole.PRODUCT_MANAGER, 
+    "pm_001"
 )
 
-# 添加约束
-constraint = PromptConstraint(
-    constraint_id="polite_language",
-    name="礼貌用语约束",
-    type="content_filter",
-    rule="必须使用礼貌用语，避免不当表达",
-    severity="high"
-)
-
-# 注册到管理器
-prompt_manager.add_template(template)
-prompt_manager.add_constraint(constraint)
-
-# 使用模板
-rendered_prompt = prompt_manager.render_template(
-    "customer_service_greeting",
-    {"agent_name": "小助手"}
-)
-print(f"渲染结果: {rendered_prompt}")
+# 创建完整企业团队
+team = EnterpriseAgentFactory.create_complete_enterprise_team()
 ```
 
-### Agent使用示例
+### 系统监控
 
 ```python
-from digital_employee_core import (
-    create_agent,
-    CustomerServiceAgent,
-    DataAnalysisAgent
-)
+# 获取系统状态
+status = system.get_system_status()
 
-# 创建客服Agent
-customer_agent = create_agent(
-    agent_type="CustomerServiceAgent",
-    config={
-        "name": "智能客服小助手",
-        "department": "客户服务部",
-        "specialties": ["产品咨询", "订单处理", "投诉处理"]
-    }
-)
+# 获取性能报告  
+report = system.get_performance_report()
 
-# 处理客户咨询
-response = customer_agent.handle_inquiry(
-    customer_message="我想了解你们的产品功能",
-    customer_context={
-        "customer_id": "C001",
-        "history": [],
-        "priority": "normal"
-    }
-)
-
-print(f"客服响应: {response}")
-
-# 创建数据分析Agent
-data_agent = create_agent(
-    agent_type="DataAnalysisAgent",
-    config={
-        "name": "数据分析专家",
-        "analysis_types": ["销售分析", "用户行为分析", "趋势预测"]
-    }
-)
-
-# 执行数据分析任务
-analysis_result = data_agent.analyze_data(
-    data_source="sales_data.csv",
-    analysis_type="monthly_report",
-    parameters={
-        "start_date": "2024-01-01",
-        "end_date": "2024-07-31"
-    }
-)
-
-print(f"分析结果: {analysis_result}")
+# 获取调度统计
+scheduler_stats = system.scheduler.get_scheduling_statistics()
 ```
 
-## 模块结构
+## 🔧 配置选项
 
-```
-digital_employee_core/
-├── __init__.py                 # 模块入口和API导出
-├── prompt_manager.py           # Prompt管理系统
-├── agent_implementations.py    # Agent实现框架
-├── test_framework.py           # 测试验证框架
-├── quick_test.py              # 快速测试工具
-├── simple_test.py             # 简单测试示例
-├── prompts/                   # Prompt模板库
-│   ├── system_prompts.json    # 系统级提示词
-│   ├── agent_prompts.json     # Agent专用提示词
-│   ├── task_prompts.json      # 任务型提示词
-│   ├── constraint_prompts.json # 约束条件提示词
-│   └── version.json           # 版本信息
-└── README.md                  # 本文档
-```
-
-## API 参考
-
-### Prompt管理系统
-
-#### PromptManager 主管理器
-```python
-class PromptManager:
-    def add_template(self, template: PromptTemplate) -> bool
-    def get_template(self, template_id: str) -> Optional[PromptTemplate]
-    def render_template(self, template_id: str, variables: Dict[str, Any]) -> str
-    def add_constraint(self, constraint: PromptConstraint) -> bool
-    def validate_content(self, content: str) -> ValidationResult
-    def get_usage_statistics(self) -> Dict[str, Any]
-```
-
-#### PromptTemplate 模板类
-```python
-@dataclass
-class PromptTemplate:
-    template_id: str              # 模板唯一ID
-    name: str                    # 模板名称
-    content: str                 # 模板内容
-    category: str                # 分类
-    variables: List[str]         # 变量列表
-    constraints: List[str] = []  # 约束ID列表
-    metadata: Dict[str, Any] = None
-    created_at: float = 0.0
-    updated_at: float = 0.0
-    version: str = "1.0.0"
-    active: bool = True
-```
-
-### Agent实现框架
-
-#### DigitalEmployeeAgent 基类
-```python
-class DigitalEmployeeAgent:
-    def __init__(self, agent_id: str, name: str, config: Dict[str, Any])
-    def process_input(self, input_data: Any, context: Dict[str, Any]) -> AgentResponse
-    def get_capabilities(self) -> List[str]
-    def get_status(self) -> Dict[str, Any]
-    def update_config(self, new_config: Dict[str, Any]) -> bool
-```
-
-#### 专业Agent类型
-
-**CustomerServiceAgent 客服Agent**
-```python
-class CustomerServiceAgent(DigitalEmployeeAgent):
-    def handle_inquiry(self, customer_message: str, customer_context: Dict) -> str
-    def process_complaint(self, complaint_data: Dict) -> Dict[str, Any]
-    def escalate_issue(self, issue_data: Dict) -> bool
-```
-
-**DataAnalysisAgent 数据分析Agent**
-```python
-class DataAnalysisAgent(DigitalEmployeeAgent):
-    def analyze_data(self, data_source: str, analysis_type: str, parameters: Dict) -> Dict
-    def generate_report(self, analysis_results: Dict, report_format: str) -> str
-    def create_visualization(self, data: Dict, chart_type: str) -> str
-```
-
-**ContentCreationAgent 内容创作Agent**
-```python
-class ContentCreationAgent(DigitalEmployeeAgent):
-    def create_document(self, doc_type: str, requirements: Dict) -> str
-    def generate_code(self, language: str, specifications: Dict) -> str
-    def write_marketing_copy(self, product_info: Dict, target_audience: str) -> str
-```
-
-### 配置选项
+### 系统配置
 
 ```python
-DEFAULT_AGENT_CONFIG = {
-    "max_conversation_history": 50,
-    "response_timeout": 30,
-    "enable_memory_integration": True,
-    "log_level": "INFO",
-    "enable_prompt_caching": True,
-    "max_prompt_cache_size": 100
-}
-```
+from digital_employee_core import configure_system, DEFAULT_CONFIG
 
-## 测试框架
+# 查看默认配置
+print(DEFAULT_CONFIG)
 
-### 运行测试套件
-
-```python
-from digital_employee_core.test_framework import DigitalEmployeeTestFramework
-
-# 创建测试框架
-test_framework = DigitalEmployeeTestFramework()
-
-# 运行完整测试套件
-test_framework.run_comprehensive_test_suite()
-
-# 运行特定测试
-test_framework.test_prompt_management()
-test_framework.test_agent_implementations()
-test_framework.test_integration_scenarios()
-```
-
-### 自定义测试
-
-```python
-from digital_employee_core.test_framework import TestCase, TestResult
-
-class CustomTest(TestCase):
-    def test_custom_functionality(self):
-        # 自定义测试逻辑
-        result = self.target_function()
-        self.assert_equals(result, expected_value)
-        return TestResult.PASS
-
-# 注册并运行
-test_framework.add_test_case(CustomTest())
-test_framework.run_tests()
-```
-
-## 性能优化
-
-### Prompt缓存优化
-
-```python
-# 启用Prompt缓存
-config = {
-    "enable_prompt_caching": True,
-    "max_prompt_cache_size": 200,
-    "cache_ttl": 3600  # 1小时过期
+# 自定义配置
+custom_config = {
+    "log_level": "DEBUG",
+    "max_concurrent_requests": 20,
+    "agent_timeout": 120,
+    "enable_performance_monitoring": True
 }
 
-prompt_manager = create_prompt_manager(config)
+configure_system(custom_config)
 ```
 
-### Agent并发处理
+### 负载均衡策略
 
 ```python
+from digital_employee_core import LoadBalancingStrategy
+
+# 可用策略
+strategies = [
+    LoadBalancingStrategy.ROUND_ROBIN,           # 轮询
+    LoadBalancingStrategy.LEAST_LOADED,          # 最少负载
+    LoadBalancingStrategy.CAPABILITY_WEIGHTED,   # 能力加权 (推荐)
+    LoadBalancingStrategy.RESPONSE_TIME_WEIGHTED # 响应时间加权
+]
+```
+
+## 🧪 测试与验证
+
+### 运行系统测试
+
+```python
+# 测试完整系统
+from digital_employee_core.digital_employee_system import test_complete_system
+await test_complete_system()
+
+# 测试企业Agent
+from digital_employee_core.enterprise_agents import test_enterprise_agents  
+await test_enterprise_agents()
+
+# 测试任务规划
+from digital_employee_core.task_planner import test_task_planner
+await test_task_planner()
+
+# 测试Agent调度
+from digital_employee_core.agent_scheduler import test_agent_scheduler
+await test_agent_scheduler()
+```
+
+### 性能基准测试
+
+```python
+import time
 import asyncio
-from digital_employee_core import create_agent
 
-async def handle_multiple_requests():
-    agent = create_agent("CustomerServiceAgent")
+async def benchmark_system():
+    system = await quick_setup_system()
     
-    # 并发处理多个请求
-    tasks = [
-        agent.handle_inquiry_async(msg1, ctx1),
-        agent.handle_inquiry_async(msg2, ctx2),
-        agent.handle_inquiry_async(msg3, ctx3)
-    ]
+    # 并发请求测试
+    tasks = []
+    test_requests = [
+        "分析用户行为数据",
+        "优化系统性能",
+        "制定营销策略", 
+        "设计新功能原型",
+        "处理客户投诉"
+    ] * 10  # 50个并发请求
+    
+    start_time = time.time()
+    
+    for request in test_requests:
+        task = system.process_user_request(request)
+        tasks.append(task)
     
     results = await asyncio.gather(*tasks)
-    return results
+    
+    end_time = time.time()
+    
+    # 统计结果
+    successful = len([r for r in results if r.status == "success"])
+    total_time = end_time - start_time
+    
+    print(f"并发测试结果:")
+    print(f"总请求数: {len(test_requests)}")
+    print(f"成功处理: {successful}")
+    print(f"成功率: {successful/len(test_requests):.1%}")
+    print(f"总耗时: {total_time:.2f}s")
+    print(f"平均响应时间: {total_time/len(test_requests):.2f}s")
+    print(f"吞吐量: {len(test_requests)/total_time:.1f} req/s")
+
+# 运行基准测试
+await benchmark_system()
 ```
 
-## 集成示例
-
-### 与记忆引擎集成
-
-```python
-from memory_engine_module import create_memory_system, InputType
-from digital_employee_core import create_agent
-
-# 创建记忆系统和Agent
-memory_system = create_memory_system()
-customer_agent = create_agent("CustomerServiceAgent")
-
-# 集成工作流
-def integrated_customer_service(customer_message, customer_context):
-    # 1. 使用记忆系统处理输入
-    memory_result = memory_system.process(
-        customer_message,
-        InputType.QUERY,
-        {"source": "customer", "agent_type": "customer_service"}
-    )
-    
-    # 2. Agent基于记忆结果生成响应
-    enhanced_context = {
-        **customer_context,
-        "memory_insights": memory_result.response,
-        "confidence": memory_result.confidence,
-        "activated_memories": memory_result.activated_memories
-    }
-    
-    # 3. 生成最终响应
-    agent_response = customer_agent.handle_inquiry(
-        customer_message, 
-        enhanced_context
-    )
-    
-    # 4. 将交互结果存入记忆
-    interaction_event = {
-        "description": f"客服处理: {customer_message[:50]}...",
-        "participants": ["customer", "customer_service_agent"],
-        "actions": ["receive_inquiry", "analyze_context", "provide_response"],
-        "results": [agent_response[:50] + "..."]
-    }
-    
-    memory_system.process(
-        interaction_event,
-        InputType.EVENT,
-        {"source": "service_interaction"}
-    )
-    
-    return agent_response
-
-# 使用集成系统
-response = integrated_customer_service(
-    "我的订单什么时候能到？",
-    {"customer_id": "C123", "order_id": "O456"}
-)
-```
-
-## 故障排除
+## 🔍 故障排除
 
 ### 常见问题
 
-1. **组件导入失败**
+1. **模块导入失败**
    ```python
-   # 检查组件可用性
-   from digital_employee_core import get_module_info
+   from digital_employee_core import get_module_info, check_dependencies
    
    info = get_module_info()
    if not info['components_available']:
-       print(f"导入错误: {info.get('import_error', '未知错误')}")
+       print(f"导入错误: {info['import_error']}")
+   
+   deps = check_dependencies()
+   for dep, status in deps.items():
+       if not status.get('available', False):
+           print(f"缺少依赖: {dep}")
    ```
 
-2. **Prompt渲染失败**
+2. **Agent执行超时**
    ```python
-   # 检查模板变量
-   template = prompt_manager.get_template("template_id")
-   print(f"必需变量: {template.variables}")
-   
-   # 提供所有必需变量
-   result = prompt_manager.render_template(
-       "template_id",
-       {var: "default_value" for var in template.variables}
-   )
+   # 增加超时时间
+   config = {"agent_timeout": 300}  # 5分钟
+   configure_system(config)
    ```
 
-3. **Agent响应超时**
+3. **内存使用过高**
    ```python
-   # 调整超时配置
-   config = DEFAULT_AGENT_CONFIG.copy()
-   config["response_timeout"] = 60  # 增加到60秒
+   # 减少并发请求数
+   config = {"max_concurrent_requests": 5}
+   configure_system(config)
+   ```
+
+4. **任务分配失败**
+   ```python
+   # 检查Agent状态
+   status = system.get_system_status()
+   print(f"可用Agent: {status['agent_status']}")
    
-   agent = create_agent("AgentType", config)
+   # 查看调度统计
+   stats = system.scheduler.get_scheduling_statistics()
+   print(f"分配成功率: {stats['successful_assignments']/stats['total_assignments']:.1%}")
    ```
 
 ### 调试模式
@@ -423,77 +419,121 @@ import logging
 
 # 启用详细日志
 logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger('digital_employee_core')
-logger.setLevel(logging.DEBUG)
 
-# 启用测试模式
-from digital_employee_core import DEFAULT_AGENT_CONFIG
-config = DEFAULT_AGENT_CONFIG.copy()
-config["debug_mode"] = True
-config["log_level"] = "DEBUG"
+# 配置系统调试
+config = {
+    "log_level": "DEBUG",
+    "enable_performance_monitoring": True
+}
+configure_system(config)
 ```
 
-## 扩展开发
+## 🔮 高级用法
 
-### 自定义Agent类型
+### 自定义Agent
 
 ```python
-from digital_employee_core import DigitalEmployeeAgent, AgentResponse
+from digital_employee_core import BaseEnterpriseAgent, AgentRole
 
-class CustomAgent(DigitalEmployeeAgent):
-    def __init__(self, agent_id: str, name: str, config: Dict[str, Any]):
-        super().__init__(agent_id, name, config)
-        self.custom_capabilities = config.get("custom_capabilities", [])
-    
-    def process_input(self, input_data: Any, context: Dict[str, Any]) -> AgentResponse:
-        # 自定义处理逻辑
-        response_text = f"Custom processing: {input_data}"
-        
-        return AgentResponse(
-            content=response_text,
-            confidence=0.8,
-            metadata={"custom_field": "custom_value"}
+class CustomAgent(BaseEnterpriseAgent):
+    def __init__(self, agent_id: str):
+        super().__init__(
+            agent_id=agent_id,
+            role=AgentRole.PRODUCT_MANAGER,  # 继承现有角色
+            department="自定义部门",
+            capabilities=["自定义能力1", "自定义能力2"]
         )
     
-    def get_capabilities(self) -> List[str]:
-        base_capabilities = super().get_capabilities()
-        return base_capabilities + self.custom_capabilities
+    async def _execute_task_impl(self, task):
+        # 自定义任务处理逻辑
+        return {
+            "custom_result": "自定义处理结果",
+            "processing_method": "专属算法"
+        }
 
-# 注册自定义Agent
-from digital_employee_core.agent_implementations import register_agent_type
-register_agent_type("CustomAgent", CustomAgent)
+# 注册和使用自定义Agent
+custom_agent = CustomAgent("custom_001")
+# 需要手动注册到调度器
 ```
 
-### 自定义Prompt约束
+### 扩展意图识别
 
 ```python
-from digital_employee_core import PromptConstraint, ValidationResult
+from digital_employee_core.intent_recognition import TaskDomain
 
-def custom_constraint_validator(content: str, constraint: PromptConstraint) -> ValidationResult:
-    # 自定义验证逻辑
-    if "forbidden_word" in content:
-        return ValidationResult(
-            is_valid=False,
-            error_message="包含禁用词汇",
-            suggestions=["请使用更合适的表达"]
-        )
-    return ValidationResult(is_valid=True)
+# 自定义领域关键词
+custom_domain_keywords = {
+    TaskDomain.PRODUCT: ["自定义产品关键词", "专业术语"],
+    # ... 其他领域
+}
 
-# 注册自定义约束
-from digital_employee_core.prompt_manager import register_constraint_validator
-register_constraint_validator("custom_filter", custom_constraint_validator)
+# 通过继承扩展功能
+class CustomIntentEngine(EnterpriseIntentRecognitionEngine):
+    def __init__(self):
+        super().__init__()
+        # 扩展领域分类器
+        self.domain_classifier.domain_keywords.update(custom_domain_keywords)
 ```
 
-## 版本信息
+## 📈 性能优化
 
-- **当前版本**: 1.0.0
-- **Python要求**: >= 3.7
-- **可选依赖**: requests (HTTP支持)
+### 系统调优建议
 
-## 许可证
+1. **合理配置并发数**: 根据硬件资源调整`max_concurrent_requests`
+2. **选择合适的负载均衡策略**: 生产环境推荐`CAPABILITY_WEIGHTED`
+3. **启用性能监控**: 设置`enable_performance_monitoring=True`
+4. **定期清理历史数据**: 避免内存占用过高
+5. **Agent预热**: 系统启动后先处理几个简单请求进行预热
 
-本模块是数字员工系统的一部分，遵循项目整体许可证。
+### 扩展性考虑
+
+- **水平扩展**: 支持多实例部署，通过负载均衡器分发请求
+- **Agent池管理**: 可动态增加或减少特定类型的Agent实例
+- **缓存策略**: 对频繁请求的结果进行缓存
+- **异步处理**: 利用asyncio实现高并发处理
+
+## 📝 变更日志
+
+### v2.0.0 (当前版本)
+- ✅ 完整重构基于Multi-Agent架构
+- ✅ 新增企业级意图识别引擎
+- ✅ 新增智能任务规划器
+- ✅ 新增Multi-Agent调度器
+- ✅ 实现完整企业岗位Agent体系
+- ✅ 新增终极CodingAgent兜底机制
+- ✅ 统一系统控制器
+- ✅ 完整的API文档和使用示例
+
+### v1.0.0 (旧版本)
+- 基础Prompt管理系统
+- 简单Agent实现框架
+- 基础测试工具
+
+## 🤝 贡献指南
+
+1. Fork 项目到个人仓库
+2. 创建特性分支 (`git checkout -b feature/new-agent`)
+3. 提交更改 (`git commit -am 'Add new agent type'`)
+4. 推送分支 (`git push origin feature/new-agent`)
+5. 创建 Pull Request
+
+### 代码规范
+
+- 遵循 PEP 8 代码风格
+- 添加完整的类型注解
+- 编写单元测试和文档
+- 确保向后兼容性
+
+## 📄 许可证
+
+本模块是数字员工智能系统的一部分，遵循项目整体许可证。
+
+## 🆘 支持
+
+- 📧 技术支持: support@digital-employees.com
+- 📖 文档: 详见源代码注释和本README
+- 🐛 问题反馈: 请在项目Issue中提交
 
 ---
 
-更多详细信息请参考各组件的具体文档和源代码注释。
+**让数字员工为您的企业数字化转型赋能！** 🚀
